@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Secret Santa: quando ci vediamo?</title>
+<meta name="description" content="Segna i giorni in cui puoi esserci. Si salva da solo.">
+<meta property="og:title" content="Secret Santa: quando ci vediamo?">
+<meta property="og:description" content="Segna i giorni in cui puoi esserci. Bastano il nome e trenta secondi.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F5F8; --paper-2:#E7EBF0; --card:#FFFFFF; --ink:#18212E; --muted:#596476; --line:#D5DBE3;
+  --berry:#B3243B; --on-berry:#FFFFFF; --pine:#2E6B57; --pine-soft:#D4E5DE; --gold:#C2902A;
+  color-scheme: light;
+  box-sizing: border-box;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121922; --paper-2:#1A232E; --card:#18212B; --ink:#E9EEF3; --muted:#9AA6B5; --line:#2C3745;
+    --berry:#D4465D; --on-berry:#FFFFFF; --pine:#6DBB9F; --pine-soft:#23372F; --gold:#E3B54E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121922; --paper-2:#1A232E; --card:#18212B; --ink:#E9EEF3; --muted:#9AA6B5; --line:#2C3745;
+  --berry:#D4465D; --on-berry:#FFFFFF; --pine:#6DBB9F; --pine-soft:#23372F; --gold:#E3B54E;
+  color-scheme: dark;
+}
+*,*::before,*::after{ box-sizing: inherit; }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-optical-sizing:auto; line-height:1.5; -webkit-font-smoothing:antialiased;
+  padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+}
+main{ max-width:42rem; margin:0 auto; padding:28px 16px 64px; }
+h1{ font-size:clamp(2rem, 8vw, 3.2rem); line-height:1.03; font-weight:800; letter-spacing:-0.028em; margin:0 0 12px; text-wrap:balance; }
+.lede{ color:var(--muted); font-size:1.02rem; max-width:34rem; margin:0 0 20px; }
+.verdict{ border-left:4px solid var(--gold); padding:3px 0 3px 14px; margin:0 0 18px; font-size:1.12rem; font-weight:650; line-height:1.35; text-wrap:pretty; }
+.note{ background:var(--paper-2); border-radius:10px; padding:10px 12px; font-size:.94rem; margin:0 0 16px; }
+.note.err{ color:var(--berry); }
+
+.who{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin:0 0 22px; }
+.who label{ display:block; font-weight:650; margin:0 0 8px; }
+.who .row{ display:flex; gap:8px; }
+.who input{
+  flex:1; min-width:0; font:inherit; font-size:1rem; color:var(--ink); background:var(--paper);
+  border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+}
+.who input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+.me{ font-size:.95rem; color:var(--muted); margin:0 0 16px; }
+.me button{ font:inherit; font-size:.95rem; color:var(--berry); background:none; border:0; padding:0 0 0 6px; cursor:pointer; text-decoration:underline; }
+
+.monthname{ font-size:.88rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px; }
+.cal{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:6px; }
+.wd{ text-align:center; font-size:.78rem; color:var(--muted); padding-bottom:2px; }
+.wd.we{ color:var(--berry); }
+.pad{ aspect-ratio:1 / 1.08; }
+.day{
+  position:relative; aspect-ratio:1 / 1.08; padding:0; overflow:hidden;
+  border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink);
+  font:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  transition:background-color .15s, color .15s, border-color .15s, transform .12s;
+}
+.day.we{ background:var(--paper-2); }
+.day .n{ font-size:clamp(1.1rem, 5vw, 1.6rem); font-weight:750; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+.day .c{ position:absolute; top:4px; right:6px; font-size:.72rem; font-weight:650; color:var(--pine); font-variant-numeric:tabular-nums; }
+.day .star{ position:absolute; top:3px; left:6px; font-size:.7rem; color:var(--gold); }
+.day .bar{ position:absolute; left:0; bottom:0; height:5px; width:0; background:var(--pine); transition:width .3s; }
+.day[aria-pressed="true"]{ background:var(--berry); border-color:var(--berry); color:var(--on-berry); }
+.day[aria-pressed="true"] .c, .day[aria-pressed="true"] .star{ color:var(--on-berry); }
+.day[aria-pressed="true"] .bar{ background:rgba(255,255,255,.55); }
+.day.top{ box-shadow:0 0 0 2px var(--paper), 0 0 0 4px var(--gold); }
+.day:active{ transform:scale(.94); }
+.day:focus-visible, .btn:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+.tools{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:18px 0 0; }
+.btn{ font:inherit; font-size:.92rem; font-weight:600; color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:999px; padding:7px 14px; cursor:pointer; }
+.btn:hover{ border-color:var(--muted); }
+.btn.danger{ color:var(--berry); border-color:transparent; }
+.status{ margin-left:auto; font-size:.88rem; color:var(--muted); }
+.status.err{ color:var(--berry); }
+.legend{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.85rem; color:var(--muted); margin:12px 0 0; }
+.legend i{ display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:6px; }
+
+h2{ font-size:1.3rem; font-weight:750; letter-spacing:-0.012em; margin:40px 0 10px; }
+.rank, .people{ list-style:none; margin:0; padding:0; }
+.rank li{ display:grid; grid-template-columns:1.5rem 6.2rem minmax(0,1fr) 1.8rem; gap:4px 10px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
+.rank .pos{ color:var(--muted); font-variant-numeric:tabular-nums; }
+.rank .date{ font-weight:650; }
+.rank .track{ height:8px; background:var(--pine-soft); border-radius:4px; overflow:hidden; }
+.rank .fill{ display:block; height:100%; background:var(--pine); border-radius:4px; }
+.rank li.lead .fill{ background:var(--gold); }
+.rank .cnt{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+.rank .names{ grid-column:2 / -1; font-size:.86rem; color:var(--muted); }
+.people li{ display:flex; align-items:baseline; gap:10px; padding:9px 0; border-top:1px solid var(--line); }
+.people .nm{ font-weight:600; }
+.people .ct{ color:var(--muted); font-size:.9rem; }
+.people .tu{ font-size:.78rem; font-weight:700; color:var(--berry); }
+.empty{ color:var(--muted); margin:0; }
+footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
+[hidden]{ display:none !important; }
+@media (min-width:640px){ main{ padding-top:48px; } .cal{ gap:8px; } }
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; } .day:active{ transform:none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Secret Santa: quando ci vediamo?</h1>
+  <p class="lede">Segna tutti i giorni in cui puoi esserci, dal 21 novembre al 21 dicembre. Ogni scelta si salva da sola e il giorno più gettonato compare qui sotto.</p>
+
+  <p class="verdict" id="verdict" hidden></p>
+  <p class="note" id="note" hidden></p>
+
+  <div class="who" id="whoBox">
+    <label for="nameInput">Come ti chiami?</label>
+    <div class="row">
+      <input id="nameInput" type="text" autocomplete="name" maxlength="60" placeholder="Il tuo nome" enterkeyhint="done">
+      <button class="btn" id="nameSave" type="button">Avanti</button>
+    </div>
+  </div>
+  <p class="me" id="me" hidden></p>
+
+  <div id="calendars"></div>
+
+  <div class="tools">
+    <button class="btn" id="all" type="button">Seleziona tutti</button>
+    <button class="btn" id="none" type="button">Azzera</button>
+    <span class="status" id="status" role="status" aria-live="polite"></span>
+  </div>
+  <p class="legend">
+    <span><i style="background:var(--berry)"></i>I tuoi giorni</span>
+    <span><i style="background:var(--pine)"></i>Quante persone ci sono</span>
+    <span><i style="box-shadow:inset 0 0 0 2px var(--gold)"></i>Giorno più gettonato</span>
+  </p>
+
+  <h2>Classifica dei giorni</h2>
+  <ol class="rank" id="rank"></ol>
+  <p class="empty" id="rankEmpty">Ancora nessun giorno scelto.</p>
+
+  <h2 id="peopleTitle">Chi ha risposto</h2>
+  <ul class="people" id="people"></ul>
+  <p class="empty" id="peopleEmpty">Nessuno ha ancora risposto.</p>
+
+  <div class="tools" id="removeBox" hidden>
+    <button class="btn danger" id="remove" type="button">Rimuovi la mia risposta</button>
+  </div>
+
+  <footer>Le risposte si aggiornano da sole ogni pochi secondi.</footer>
+</main>
+
+<script>
+(function(){
+  var API = 'https://gdmqiltzaiklcdfgagfo.supabase.co/rest/v1/disponibilita';
+  var KEY = 'sb_publishable_onyZk5yCpezPvKfC0KAfyw_VKWA3Xj_';
+  var SONDAGGIO = 'secret-santa-2026';
+  var FROM = '2026-11-21', TO = '2026-12-21';
+
+  var WD_LONG = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  var WD_SHORT = ['dom','lun','mar','mer','gio','ven','sab'];
+  var MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  var MON_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+  function iso(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function parse(s){ var p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function longDate(s){ var d = parse(s); return WD_LONG[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+  function shortDate(s){ var d = parse(s); return WD_SHORT[d.getDay()] + ' ' + d.getDate() + ' ' + MON_SHORT[d.getMonth()]; }
+  function persone(n){ return n === 1 ? '1 persona' : n + ' persone'; }
+  function $(id){ return document.getElementById(id); }
+
+  var DAYS = (function(){
+    var out = [], d = parse(FROM), end = parse(TO);
+    while (d <= end){ out.push(iso(d)); d.setDate(d.getDate()+1); }
+    return out;
+  })();
+
+  var S = {
+    rows: [], mine: new Set(), myId: null, myName: '', token: '',
+    phase: 'loading', dirty: false, saving: false, queued: false, timer: null,
+    save: 'idle', saveMsg: '', noteMsg: '', noteErr: false, confirmRemove: false
+  };
+
+  // ---- storage (può non esistere in navigazione privata)
+  function store(k, v){
+    try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e){ return null; }
+  }
+  S.token = store('qcv-token') || '';
+  if (!S.token){
+    var a = new Uint8Array(16);
+    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach(function(_,i){ a[i] = Math.floor(Math.random()*256); });
+    S.token = Array.from(a).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    store('qcv-token', S.token);
+  }
+  S.myId = store('qcv-id') || null;
+  S.myName = store('qcv-nome') || '';
+
+  // ---- calendario
+  var cals = $('calendars'), cells = {};
+  (function build(){
+    var months = [];
+    DAYS.forEach(function(s){
+      var d = parse(s), k = d.getFullYear() + '-' + d.getMonth();
+      if (!months.length || months[months.length-1].k !== k) months.push({k:k, y:d.getFullYear(), m:d.getMonth(), days:[]});
+      months[months.length-1].days.push(s);
+    });
+    months.forEach(function(mo){
+      var h = document.createElement('p');
+      h.className = 'monthname';
+      h.textContent = MONTHS[mo.m] + ' ' + mo.y;
+      cals.appendChild(h);
+
+      var grid = document.createElement('div');
+      grid.className = 'cal';
+      grid.setAttribute('role','group');
+      grid.setAttribute('aria-label', MONTHS[mo.m] + ' ' + mo.y);
+      ['lun','mar','mer','gio','ven','sab','dom'].forEach(function(w,i){
+        var el = document.createElement('div');
+        el.className = 'wd' + (i >= 5 ? ' we' : '');
+        el.textContent = w;
+        el.setAttribute('aria-hidden','true');
+        grid.appendChild(el);
+      });
+      var first = parse(mo.days[0]);
+      var pad = (first.getDay() + 6) % 7;
+      for (var i = 0; i < pad; i++){
+        var sp = document.createElement('div'); sp.className = 'pad'; grid.appendChild(sp);
+      }
+      mo.days.forEach(function(s){
+        var d = parse(s), wd = d.getDay();
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'day' + ((wd === 0 || wd === 6) ? ' we' : '');
+        b.setAttribute('aria-pressed','false');
+        b.innerHTML = '<span class="star" aria-hidden="true"></span><span class="n"></span><span class="c" aria-hidden="true"></span><span class="bar" aria-hidden="true"></span>';
+        b.querySelector('.n').textContent = d.getDate();
+        b.addEventListener('click', function(){ toggle(s); });
+        grid.appendChild(b);
+        cells[s] = b;
+      });
+      cals.appendChild(grid);
+    });
+  })();
+
+  // ---- calcoli
+  function effective(){
+    var rows = S.rows.filter(function(r){ return r.id !== S.myId; }).map(function(r){
+      return { id:r.id, nome:r.nome, giorni:(r.giorni||[]).filter(function(d){ return DAYS.indexOf(d) !== -1; }) };
+    });
+    if (S.myName) rows.push({ id:S.myId || 'io', nome:S.myName, giorni:Array.from(S.mine), io:true });
+    return rows;
+  }
+  function tally(rows){
+    var by = {};
+    DAYS.forEach(function(d){ by[d] = []; });
+    rows.forEach(function(r){ r.giorni.forEach(function(d){ if (by[d]) by[d].push(r); }); });
+    return by;
+  }
+  function joinDays(list){
+    var p = list.map(longDate);
+    if (p.length === 1) return p[0];
+    return p.slice(0,-1).join(', ') + ' e ' + p[p.length-1];
+  }
+
+  // ---- render
+  function render(){
+    var rows = effective(), N = rows.length, by = tally(rows);
+    var max = 0;
+    DAYS.forEach(function(d){ max = Math.max(max, by[d].length); });
+    var tops = max > 0 ? DAYS.filter(function(d){ return by[d].length === max; }) : [];
+    var markTops = tops.length > 0 && tops.length <= 4;
+
+    var v = $('verdict');
+    if (S.phase === 'ready'){
+      var txt;
+      if (N === 0) txt = 'Ancora nessuna risposta. Inizia tu: segna i giorni in cui ci sei.';
+      else if (max === 0) txt = 'Ancora nessun giorno scelto.';
+      else if (tops.length === 1) txt = 'Per ora vince ' + longDate(tops[0]) + ': ci sono ' + persone(max) + ' su ' + N + '.';
+      else if (tops.length <= 4) txt = 'Pari merito tra ' + joinDays(tops) + ': in ciascuno ci sono ' + persone(max) + ' su ' + N + '.';
+      else txt = 'Pari merito tra ' + tops.length + ' giorni: in ciascuno ci sono ' + persone(max) + ' su ' + N + '.';
+      v.textContent = txt; v.hidden = false;
+    } else v.hidden = true;
+
+    var note = $('note'), nt = S.noteMsg;
+    if (!nt && S.phase === 'loading') nt = 'Carico le risposte…';
+    note.textContent = nt;
+    note.className = 'note' + (S.noteErr ? ' err' : '');
+    note.hidden = !nt;
+
+    $('whoBox').hidden = !!S.myName;
+    var me = $('me');
+    if (S.myName){
+      me.textContent = 'Stai rispondendo come ' + S.myName + '.';
+      var ch = document.createElement('button');
+      ch.type = 'button'; ch.textContent = 'cambia nome';
+      ch.addEventListener('click', function(){
+        $('nameInput').value = S.myName;
+        S.myName = '';
+        render();
+        $('nameInput').focus();
+      });
+      me.appendChild(ch);
+      me.hidden = false;
+    } else me.hidden = true;
+
+    DAYS.forEach(function(s){
+      var b = cells[s], c = by[s].length, mine = S.mine.has(s);
+      b.setAttribute('aria-pressed', mine ? 'true' : 'false');
+      b.classList.toggle('top', markTops && tops.indexOf(s) !== -1);
+      b.querySelector('.star').textContent = (markTops && tops.indexOf(s) !== -1) ? '★' : '';
+      b.querySelector('.c').textContent = c > 0 ? c : '';
+      b.querySelector('.bar').style.width = N > 0 ? (c / N * 100) + '%' : '0';
+      b.setAttribute('aria-label', longDate(s) + ': ' + (c === 1 ? '1 persona disponibile' : c + ' persone disponibili'));
+    });
+
+    var st = $('status'), stTxt = '', stErr = false;
+    if (S.save === 'saving') stTxt = 'Salvataggio…';
+    else if (S.save === 'saved') stTxt = 'Salvato';
+    else if (S.save === 'error'){ stTxt = S.saveMsg; stErr = true; }
+    st.textContent = stTxt;
+    st.className = 'status' + (stErr ? ' err' : '');
+
+    var rank = $('rank');
+    rank.textContent = '';
+    var days = DAYS.filter(function(d){ return by[d].length > 0; });
+    days.sort(function(a,b){ return (by[b].length - by[a].length) || (a < b ? -1 : 1); });
+    var pos = 0, prev = -1;
+    days.forEach(function(d, i){
+      var c = by[d].length;
+      if (c !== prev){ pos = i + 1; prev = c; }
+      var li = document.createElement('li');
+      if (c === max) li.className = 'lead';
+      var p = document.createElement('span'); p.className = 'pos'; p.textContent = pos;
+      var dt = document.createElement('span'); dt.className = 'date'; dt.textContent = shortDate(d);
+      var tr = document.createElement('span'); tr.className = 'track';
+      var fl = document.createElement('span'); fl.className = 'fill'; fl.style.width = (c / Math.max(N,1) * 100) + '%';
+      tr.appendChild(fl);
+      var cn = document.createElement('span'); cn.className = 'cnt'; cn.textContent = c;
+      var nm = document.createElement('span'); nm.className = 'names';
+      nm.textContent = by[d].map(function(r){ return r.io ? r.nome + ' (tu)' : r.nome; }).join(', ');
+      li.appendChild(p); li.appendChild(dt); li.appendChild(tr); li.appendChild(cn); li.appendChild(nm);
+      rank.appendChild(li);
+    });
+    $('rankEmpty').hidden = days.length > 0 || S.phase !== 'ready';
+
+    var list = $('people');
+    list.textContent = '';
+    $('peopleTitle').textContent = rows.length ? 'Chi ha risposto (' + rows.length + ')' : 'Chi ha risposto';
+    rows.forEach(function(r){
+      var n = r.giorni.length;
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.nome;
+      li.appendChild(nm);
+      if (r.io){ var t = document.createElement('span'); t.className = 'tu'; t.textContent = 'TU'; li.appendChild(t); }
+      var ct = document.createElement('span'); ct.className = 'ct';
+      ct.textContent = n === 0 ? 'nessun giorno' : (n === 1 ? '1 giorno' : n + ' giorni');
+      li.appendChild(ct);
+      list.appendChild(li);
+    });
+    $('peopleEmpty').hidden = rows.length > 0 || S.phase !== 'ready';
+
+    $('removeBox').hidden = !S.myId;
+    $('remove').textContent = S.confirmRemove ? 'Tocca di nuovo per confermare' : 'Rimuovi la mia risposta';
+  }
+
+  // ---- rete
+  function headers(extra){
+    var h = { 'apikey': KEY, 'Content-Type': 'application/json' };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+  async function load(){
+    var r = await fetch(API + '?sondaggio=eq.' + encodeURIComponent(SONDAGGIO) + '&select=id,nome,giorni,created_at&order=created_at.asc', { headers: headers() });
+    if (!r.ok) throw new Error('http ' + r.status);
+    return await r.json();
+  }
+  async function refresh(){
+    try {
+      var rows = await load();
+      S.rows = rows;
+      S.phase = 'ready';
+      S.noteMsg = ''; S.noteErr = false;
+      var me = S.myId ? rows.filter(function(x){ return x.id === S.myId; })[0] : null;
+      if (me){
+        if (!S.dirty && !S.saving) S.mine = new Set((me.giorni||[]).filter(function(d){ return DAYS.indexOf(d) !== -1; }));
+        if (me.nome && !S.dirty) { S.myName = me.nome; store('qcv-nome', me.nome); }
+      } else if (S.myId){
+        S.myId = null; store('qcv-id', '');
+      }
+      render();
+    } catch(e){
+      if (S.phase === 'loading'){
+        S.phase = 'error';
+        S.noteMsg = 'Non riesco a caricare le risposte. Controlla la connessione e ricarica la pagina.';
+        S.noteErr = true;
+        render();
+      }
+    }
+  }
+
+  function changed(){
+    S.dirty = true; S.save = 'saving'; S.confirmRemove = false;
+    clearTimeout(S.timer);
+    S.timer = setTimeout(flush, 700);
+    render();
+  }
+
+  async function flush(){
+    if (!S.myName){ S.save = 'idle'; S.dirty = false; render(); return; }
+    if (S.saving){ S.queued = true; return; }
+    S.saving = true; S.queued = false;
+    var giorni = Array.from(S.mine).sort();
+    try {
+      if (!S.myId){
+        var r = await fetch(API + '?select=id,nome,giorni', {
+          method: 'POST',
+          headers: headers({ 'Prefer': 'return=representation' }),
+          body: JSON.stringify({ sondaggio: SONDAGGIO, nome: S.myName, giorni: giorni, token: S.token })
+        });
+        if (!r.ok) throw new Error(await r.text());
+        var created = (await r.json())[0];
+        S.myId = created.id;
+        store('qcv-id', S.myId);
+      } else {
+        var r2 = await fetch(API + '?id=eq.' + S.myId + '&select=id', {
+          method: 'PATCH',
+          headers: headers({ 'x-token': S.token, 'Prefer': 'return=representation' }),
+          body: JSON.stringify({ nome: S.myName, giorni: giorni })
+        });
+        if (!r2.ok) throw new Error(await r2.text());
+        var back = await r2.json();
+        if (!back.length) throw new Error('riga non modificabile');
+      }
+      S.dirty = false; S.save = 'saved'; S.saveMsg = '';
+    } catch(e){
+      S.save = 'error';
+      S.saveMsg = 'Non salvato. Tocca di nuovo un giorno per riprovare.';
+    }
+    S.saving = false;
+    if (S.queued){ S.queued = false; flush(); return; }
+    render();
+    refresh();
+  }
+
+  function toggle(d){
+    if (!S.myName){
+      S.mine.has(d) ? S.mine.delete(d) : S.mine.add(d);
+      render();
+      $('nameInput').focus();
+      return;
+    }
+    S.mine.has(d) ? S.mine.delete(d) : S.mine.add(d);
+    changed();
+  }
+
+  function setName(){
+    var v = $('nameInput').value.trim().slice(0, 60);
+    if (!v) { $('nameInput').focus(); return; }
+    S.myName = v;
+    store('qcv-nome', v);
+    changed();
+  }
+  $('nameSave').addEventListener('click', setName);
+  $('nameInput').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); setName(); } });
+
+  $('all').addEventListener('click', function(){
+    S.mine = new Set(DAYS);
+    S.myName ? changed() : (render(), $('nameInput').focus());
+  });
+  $('none').addEventListener('click', function(){
+    S.mine = new Set();
+    S.myName ? changed() : render();
+  });
+
+  $('remove').addEventListener('click', async function(){
+    if (!S.myId) return;
+    if (!S.confirmRemove){ S.confirmRemove = true; render(); return; }
+    S.confirmRemove = false;
+    try {
+      await fetch(API + '?id=eq.' + S.myId, { method: 'DELETE', headers: headers({ 'x-token': S.token }) });
+      S.myId = null; S.mine = new Set(); S.save = 'idle';
+      store('qcv-id', '');
+    } catch(e){
+      S.save = 'error'; S.saveMsg = 'Rimozione non riuscita.';
+    }
+    render();
+    refresh();
+  });
+
+  render();
+  refresh();
+  setInterval(function(){ if (!S.dirty && !S.saving && document.visibilityState === 'visible') refresh(); }, 8000);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible' && !S.dirty) refresh(); });
+})();
+</script>
+</body>
+</html>
