@@ -287,10 +287,14 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
       v.textContent = txt; v.hidden = false;
     } else v.hidden = true;
 
-    var note = $('note'), nt = S.noteMsg;
+    var note = $('note'), nt = S.noteMsg, nerr = S.noteErr;
     if (!nt && S.phase === 'loading') nt = 'Carico le risposte…';
+    if (!nt && !S.myName && S.mine.size > 0){
+      nt = 'Scrivi il tuo nome qui sopra: senza nome la risposta non si salva.';
+      nerr = true;
+    }
     note.textContent = nt;
-    note.className = 'note' + (S.noteErr ? ' err' : '');
+    note.className = 'note' + (nerr ? ' err' : '');
     note.hidden = !nt;
 
     $('whoBox').hidden = !!S.myName;
@@ -484,8 +488,9 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     S.confirmRemove = false;
     try {
       await fetch(API + '?id=eq.' + S.myId, { method: 'DELETE', headers: headers({ 'x-token': S.token }) });
-      S.myId = null; S.mine = new Set(); S.save = 'idle';
-      store('qcv-id', '');
+      S.myId = null; S.mine = new Set(); S.save = 'idle'; S.dirty = false;
+      S.myName = ''; $('nameInput').value = '';
+      store('qcv-id', ''); store('qcv-nome', '');
     } catch(e){
       S.save = 'error'; S.saveMsg = 'Rimozione non riuscita.';
     }
