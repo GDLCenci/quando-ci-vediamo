@@ -48,18 +48,12 @@ h1{ font-size:clamp(2rem, 8vw, 3.2rem); line-height:1.03; font-weight:800; lette
 /* identità */
 .pick{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin:0 0 22px; }
 .pick > p{ font-weight:650; margin:0 0 12px; }
-.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:10px; }
-.pers{
-  font:inherit; color:var(--ink); background:transparent; border:1px solid transparent; border-radius:12px;
-  padding:8px 4px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;
-  -webkit-tap-highlight-color:transparent;
+.pick select{
+  width:100%; font:inherit; font-size:1rem; color:var(--ink); background:var(--paper);
+  border:1px solid var(--line); border-radius:10px; padding:11px 12px; cursor:pointer;
 }
-.pers:hover{ background:var(--paper-2); }
-.pers img, .pers .ph{ width:54px; height:54px; border-radius:50%; object-fit:cover; background:var(--paper-2); }
-.pers .ph{ display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--muted); }
-.pers span.nm{ font-size:.8rem; line-height:1.15; text-align:center; font-weight:600; }
-.pick .alt{ margin:14px 0 0; }
-.pick .alt button{ font:inherit; font-size:.92rem; color:var(--berry); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; }
+.pick select:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+.pick select option:disabled{ color:var(--muted); }
 .libero{ display:flex; gap:8px; margin:12px 0 0; }
 .libero input{ flex:1; min-width:0; font:inherit; font-size:1rem; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
 
@@ -135,9 +129,8 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   <p class="note" id="note" hidden></p>
 
   <div class="pick" id="pick">
-    <p>Chi sei?</p>
-    <div class="grid" id="roster"></div>
-    <p class="alt"><button type="button" id="altro">Non sono in elenco</button></p>
+    <p><label for="chi">Chi sei?</label></p>
+    <select id="chi"></select>
     <div class="libero" id="libero" hidden>
       <input id="nameInput" type="text" autocomplete="name" maxlength="60" placeholder="Il tuo nome" enterkeyhint="done">
       <button class="btn" id="nameSave" type="button">Avanti</button>
@@ -270,22 +263,58 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   S.myId = store('qcv-id') || null;
   S.myName = store('qcv-nome') || '';
 
-  // ---- elenco del gruppo
-  (function buildRoster(){
-    var box = $('roster');
-    GRUPPO.forEach(function(g){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pers';
-      b.appendChild(avatar(g.nome));
-      var n = document.createElement('span');
-      n.className = 'nm';
-      n.textContent = g.nome;
-      b.appendChild(n);
-      b.addEventListener('click', function(){ scegli(g.nome); });
-      box.appendChild(b);
+  // ---- menù a tendina con l'elenco del gruppo
+  function buildSelect(){
+    var sel = $('chi');
+    if (document.activeElement === sel) return;
+    var hanno = {};
+    S.rows.forEach(function(r){ hanno[r.nome] = true; });
+    var scelto = sel.value;
+    sel.textContent = '';
+
+    var vuota = document.createElement('option');
+    vuota.value = '';
+    vuota.textContent = 'Scegli il tuo nome…';
+    sel.appendChild(vuota);
+
+    var liberi = GRUPPO.filter(function(g){ return !hanno[g.nome]; });
+    var votati = GRUPPO.filter(function(g){ return hanno[g.nome]; });
+
+    liberi.forEach(function(g){
+      var o = document.createElement('option');
+      o.value = g.nome;
+      o.textContent = g.nome;
+      sel.appendChild(o);
     });
-  })();
+    if (votati.length){
+      var grp = document.createElement('optgroup');
+      grp.label = 'Hanno già votato';
+      votati.forEach(function(g){
+        var o = document.createElement('option');
+        o.value = g.nome;
+        o.textContent = g.nome;
+        o.disabled = true;
+        grp.appendChild(o);
+      });
+      sel.appendChild(grp);
+    }
+    var altro = document.createElement('option');
+    altro.value = '__altro';
+    altro.textContent = 'Non sono in elenco…';
+    sel.appendChild(altro);
+
+    if (scelto) sel.value = scelto;
+  }
+  $('chi').addEventListener('change', function(){
+    var v = this.value;
+    if (v === '__altro'){
+      $('libero').hidden = false;
+      $('nameInput').focus();
+      return;
+    }
+    $('libero').hidden = true;
+    if (v) scegli(v);
+  });
 
   // ---- calendario
   var cells = {};
@@ -378,6 +407,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     note.hidden = !nt;
 
     $('pick').hidden = !!S.myName;
+    if (!S.myName) buildSelect();
     var me = $('me');
     me.textContent = '';
     if (S.myName){
@@ -390,6 +420,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
       ch.addEventListener('click', function(){
         S.myName = ''; store('qcv-nome', '');
         $('libero').hidden = true;
+        $('chi').value = '';
         render();
       });
       me.appendChild(ch);
@@ -576,10 +607,6 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     if (haRiga()) changed(); else render();
   }
 
-  $('altro').addEventListener('click', function(){
-    $('libero').hidden = false;
-    $('nameInput').focus();
-  });
   function nomeLibero(){
     var v = $('nameInput').value.trim().slice(0, 60);
     if (!v){ $('nameInput').focus(); return; }
@@ -617,7 +644,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
       await fetch(API + '?id=eq.' + S.myId, { method: 'DELETE', headers: headers({ 'x-token': S.token }) });
       S.myId = null; S.mine = new Set(); S.save = 'idle'; S.dirty = false; S.forzaRiga = false;
       S.myName = ''; S.noteMsg = ''; S.noteErr = false;
-      $('nameInput').value = ''; $('libero').hidden = true;
+      $('nameInput').value = ''; $('libero').hidden = true; $('chi').value = '';
       store('qcv-id', ''); store('qcv-nome', '');
     } catch(e){
       S.save = 'error'; S.saveMsg = 'Rimozione non riuscita.';
