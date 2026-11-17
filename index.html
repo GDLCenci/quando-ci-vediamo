@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
 <title>Secret Santa: quando ci vediamo?</title>
 <meta name="description" content="Segna i giorni in cui puoi esserci. Si salva da solo.">
 <meta property="og:title" content="Secret Santa: quando ci vediamo?">
-<meta property="og:description" content="Segna i giorni in cui puoi esserci. Bastano il nome e trenta secondi.">
+<meta property="og:description" content="Tocca il tuo nome e segna i giorni in cui puoi esserci.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,16 +45,28 @@ h1{ font-size:clamp(2rem, 8vw, 3.2rem); line-height:1.03; font-weight:800; lette
 .note{ background:var(--paper-2); border-radius:10px; padding:10px 12px; font-size:.94rem; margin:0 0 16px; }
 .note.err{ color:var(--berry); }
 
-.who{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin:0 0 22px; }
-.who label{ display:block; font-weight:650; margin:0 0 8px; }
-.who .row{ display:flex; gap:8px; }
-.who input{
-  flex:1; min-width:0; font:inherit; font-size:1rem; color:var(--ink); background:var(--paper);
-  border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+/* identità */
+.pick{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin:0 0 22px; }
+.pick > p{ font-weight:650; margin:0 0 12px; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:10px; }
+.pers{
+  font:inherit; color:var(--ink); background:transparent; border:1px solid transparent; border-radius:12px;
+  padding:8px 4px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;
+  -webkit-tap-highlight-color:transparent;
 }
-.who input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
-.me{ font-size:.95rem; color:var(--muted); margin:0 0 16px; }
-.me button{ font:inherit; font-size:.95rem; color:var(--berry); background:none; border:0; padding:0 0 0 6px; cursor:pointer; text-decoration:underline; }
+.pers:hover{ background:var(--paper-2); }
+.pers img, .pers .ph{ width:54px; height:54px; border-radius:50%; object-fit:cover; background:var(--paper-2); }
+.pers .ph{ display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--muted); }
+.pers span.nm{ font-size:.8rem; line-height:1.15; text-align:center; font-weight:600; }
+.pick .alt{ margin:14px 0 0; }
+.pick .alt button{ font:inherit; font-size:.92rem; color:var(--berry); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; }
+.libero{ display:flex; gap:8px; margin:12px 0 0; }
+.libero input{ flex:1; min-width:0; font:inherit; font-size:1rem; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+
+.me{ display:flex; align-items:center; gap:10px; font-size:.95rem; color:var(--muted); margin:0 0 16px; }
+.me img, .me .ph{ width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--paper-2); flex:none; }
+.me .ph{ display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; }
+.me button{ font:inherit; font-size:.95rem; color:var(--berry); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; }
 
 .monthname{ font-size:.88rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px; }
 .cal{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:6px; }
@@ -77,7 +90,7 @@ h1{ font-size:clamp(2rem, 8vw, 3.2rem); line-height:1.03; font-weight:800; lette
 .day[aria-pressed="true"] .bar{ background:rgba(255,255,255,.55); }
 .day.top{ box-shadow:0 0 0 2px var(--paper), 0 0 0 4px var(--gold); }
 .day:active{ transform:scale(.94); }
-.day:focus-visible, .btn:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+.day:focus-visible, .btn:focus-visible, .pers:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
 
 .tools{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:18px 0 0; }
 .btn{ font:inherit; font-size:.92rem; font-weight:600; color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:999px; padding:7px 14px; cursor:pointer; }
@@ -89,6 +102,7 @@ h1{ font-size:clamp(2rem, 8vw, 3.2rem); line-height:1.03; font-weight:800; lette
 .legend i{ display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:6px; }
 
 h2{ font-size:1.3rem; font-weight:750; letter-spacing:-0.012em; margin:40px 0 10px; }
+h2 .cnt{ color:var(--muted); font-weight:650; }
 .rank, .people{ list-style:none; margin:0; padding:0; }
 .rank li{ display:grid; grid-template-columns:1.5rem 6.2rem minmax(0,1fr) 1.8rem; gap:4px 10px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
 .rank .pos{ color:var(--muted); font-variant-numeric:tabular-nums; }
@@ -98,10 +112,13 @@ h2{ font-size:1.3rem; font-weight:750; letter-spacing:-0.012em; margin:40px 0 10
 .rank li.lead .fill{ background:var(--gold); }
 .rank .cnt{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
 .rank .names{ grid-column:2 / -1; font-size:.86rem; color:var(--muted); }
-.people li{ display:flex; align-items:baseline; gap:10px; padding:9px 0; border-top:1px solid var(--line); }
+.people li{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); }
+.people img, .people .ph{ width:38px; height:38px; border-radius:50%; object-fit:cover; background:var(--paper-2); flex:none; }
+.people .ph{ display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; color:var(--muted); }
 .people .nm{ font-weight:600; }
-.people .ct{ color:var(--muted); font-size:.9rem; }
-.people .tu{ font-size:.78rem; font-weight:700; color:var(--berry); }
+.people .ct{ color:var(--muted); font-size:.9rem; margin-left:auto; }
+.people .tu{ font-size:.72rem; font-weight:800; letter-spacing:.04em; color:var(--berry); }
+.people.manca img, .people.manca .ph{ filter:grayscale(1); opacity:.75; }
 .empty{ color:var(--muted); margin:0; }
 footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
 [hidden]{ display:none !important; }
@@ -112,14 +129,16 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
 <body>
 <main>
   <h1>Secret Santa: quando ci vediamo?</h1>
-  <p class="lede">Segna tutti i giorni in cui puoi esserci, dal 21 novembre al 21 dicembre. Ogni scelta si salva da sola e il giorno più gettonato compare qui sotto.</p>
+  <p class="lede">Tocca il tuo nome, poi segna tutti i giorni in cui puoi esserci, dal 21 novembre al 21 dicembre. Ogni scelta si salva da sola.</p>
 
   <p class="verdict" id="verdict" hidden></p>
   <p class="note" id="note" hidden></p>
 
-  <div class="who" id="whoBox">
-    <label for="nameInput">Come ti chiami?</label>
-    <div class="row">
+  <div class="pick" id="pick">
+    <p>Chi sei?</p>
+    <div class="grid" id="roster"></div>
+    <p class="alt"><button type="button" id="altro">Non sono in elenco</button></p>
+    <div class="libero" id="libero" hidden>
       <input id="nameInput" type="text" autocomplete="name" maxlength="60" placeholder="Il tuo nome" enterkeyhint="done">
       <button class="btn" id="nameSave" type="button">Avanti</button>
     </div>
@@ -131,6 +150,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   <div class="tools">
     <button class="btn" id="all" type="button">Seleziona tutti</button>
     <button class="btn" id="none" type="button">Azzera</button>
+    <button class="btn" id="mai" type="button">Non posso mai</button>
     <span class="status" id="status" role="status" aria-live="polite"></span>
   </div>
   <p class="legend">
@@ -147,6 +167,10 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   <ul class="people" id="people"></ul>
   <p class="empty" id="peopleEmpty">Nessuno ha ancora risposto.</p>
 
+  <h2 id="missingTitle">Chi manca a votare</h2>
+  <ul class="people manca" id="missing"></ul>
+  <p class="empty" id="missingEmpty" hidden>Hanno risposto tutti.</p>
+
   <div class="tools" id="removeBox" hidden>
     <button class="btn danger" id="remove" type="button">Rimuovi la mia risposta</button>
   </div>
@@ -161,14 +185,59 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   var SONDAGGIO = 'secret-santa-2026';
   var FROM = '2026-11-21', TO = '2026-12-21';
 
+  var GRUPPO = [
+    { nome:'Matteo Blasioli',    slug:'matteo-blasioli' },
+    { nome:'Nicolò Belluomo',    slug:'nicolo-belluomo' },
+    { nome:'Benni De Martino',   slug:'benni-de-martino' },
+    { nome:'Giuseppe Di Lollo',  slug:'' },
+    { nome:'Cecilia Festa',      slug:'cecilia-festa' },
+    { nome:'Patrick Giovannini', slug:'patrick-giovannini' },
+    { nome:'Carlo Leva',         slug:'carlo-leva' },
+    { nome:'Laura Lupo',         slug:'laura-lupo' },
+    { nome:'Marco Livraghi',     slug:'marco-livraghi' },
+    { nome:'Giacomo De Martino', slug:'giacomo-de-martino' },
+    { nome:'Massimo Livrieri',   slug:'massimo-livrieri' },
+    { nome:'Claudia Romeo',      slug:'claudia-romeo' },
+    { nome:'Alfonso Scimè',      slug:'alfonso-scime' },
+    { nome:'Giuseppe Tarsitano', slug:'giuseppe-tarsitano' },
+    { nome:'Alessia Verde',      slug:'alessia-verde' }
+  ];
+  function inGruppo(nome){
+    for (var i = 0; i < GRUPPO.length; i++) if (GRUPPO[i].nome === nome) return GRUPPO[i];
+    return null;
+  }
+  function iniziali(nome){
+    return nome.split(/\s+/).slice(0,2).map(function(p){ return p.charAt(0).toUpperCase(); }).join('');
+  }
+  function iniziliBox(nome, cls){
+    var sp = document.createElement('span');
+    sp.className = 'ph' + (cls ? ' ' + cls : '');
+    sp.textContent = iniziali(nome);
+    sp.setAttribute('aria-hidden','true');
+    return sp;
+  }
+  function avatar(nome, cls){
+    var g = inGruppo(nome);
+    if (g && g.slug){
+      var im = document.createElement('img');
+      im.src = 'foto/' + g.slug + '.jpg';
+      im.alt = '';
+      im.loading = 'lazy';
+      if (cls) im.className = cls;
+      im.addEventListener('error', function(){
+        if (im.parentNode) im.parentNode.replaceChild(iniziliBox(nome, cls), im);
+      });
+      return im;
+    }
+    return iniziliBox(nome, cls);
+  }
+
   var WD_LONG = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
   var WD_SHORT = ['dom','lun','mar','mer','gio','ven','sab'];
   var MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
   var MON_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
 
-  function iso(d){
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
+  function iso(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function parse(s){ var p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
   function longDate(s){ var d = parse(s); return WD_LONG[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
   function shortDate(s){ var d = parse(s); return WD_SHORT[d.getDay()] + ' ' + d.getDate() + ' ' + MON_SHORT[d.getMonth()]; }
@@ -184,27 +253,44 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   var S = {
     rows: [], mine: new Set(), myId: null, myName: '', token: '',
     phase: 'loading', dirty: false, saving: false, queued: false, timer: null,
-    save: 'idle', saveMsg: '', noteMsg: '', noteErr: false, confirmRemove: false
+    forzaRiga: false, save: 'idle', saveMsg: '', noteMsg: '', noteErr: false, confirmRemove: false
   };
 
-  // ---- storage (può non esistere in navigazione privata)
   function store(k, v){
     try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e){ return null; }
   }
   S.token = store('qcv-token') || '';
   if (!S.token){
     var a = new Uint8Array(16);
-    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach(function(_,i){ a[i] = Math.floor(Math.random()*256); });
-    S.token = Array.from(a).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+    else for (var i = 0; i < a.length; i++) a[i] = Math.floor(Math.random()*256);
+    S.token = Array.prototype.map.call(a, function(b){ return b.toString(16).padStart(2,'0'); }).join('');
     store('qcv-token', S.token);
   }
   S.myId = store('qcv-id') || null;
   S.myName = store('qcv-nome') || '';
 
+  // ---- elenco del gruppo
+  (function buildRoster(){
+    var box = $('roster');
+    GRUPPO.forEach(function(g){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pers';
+      b.appendChild(avatar(g.nome));
+      var n = document.createElement('span');
+      n.className = 'nm';
+      n.textContent = g.nome;
+      b.appendChild(n);
+      b.addEventListener('click', function(){ scegli(g.nome); });
+      box.appendChild(b);
+    });
+  })();
+
   // ---- calendario
-  var cals = $('calendars'), cells = {};
-  (function build(){
-    var months = [];
+  var cells = {};
+  (function buildCal(){
+    var cals = $('calendars'), months = [];
     DAYS.forEach(function(s){
       var d = parse(s), k = d.getFullYear() + '-' + d.getMonth();
       if (!months.length || months[months.length-1].k !== k) months.push({k:k, y:d.getFullYear(), m:d.getMonth(), days:[]});
@@ -215,7 +301,6 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
       h.className = 'monthname';
       h.textContent = MONTHS[mo.m] + ' ' + mo.y;
       cals.appendChild(h);
-
       var grid = document.createElement('div');
       grid.className = 'cal';
       grid.setAttribute('role','group');
@@ -227,11 +312,8 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
         el.setAttribute('aria-hidden','true');
         grid.appendChild(el);
       });
-      var first = parse(mo.days[0]);
-      var pad = (first.getDay() + 6) % 7;
-      for (var i = 0; i < pad; i++){
-        var sp = document.createElement('div'); sp.className = 'pad'; grid.appendChild(sp);
-      }
+      var pad = (parse(mo.days[0]).getDay() + 6) % 7;
+      for (var i = 0; i < pad; i++){ var sp = document.createElement('div'); sp.className = 'pad'; grid.appendChild(sp); }
       mo.days.forEach(function(s){
         var d = parse(s), wd = d.getDay();
         var b = document.createElement('button');
@@ -249,11 +331,12 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   })();
 
   // ---- calcoli
+  function haRiga(){ return !!S.myId || S.forzaRiga || S.mine.size > 0; }
   function effective(){
     var rows = S.rows.filter(function(r){ return r.id !== S.myId; }).map(function(r){
       return { id:r.id, nome:r.nome, giorni:(r.giorni||[]).filter(function(d){ return DAYS.indexOf(d) !== -1; }) };
     });
-    if (S.myName) rows.push({ id:S.myId || 'io', nome:S.myName, giorni:Array.from(S.mine), io:true });
+    if (S.myName && haRiga()) rows.push({ id:S.myId || 'io', nome:S.myName, giorni:Array.from(S.mine), io:true });
     return rows;
   }
   function tally(rows){
@@ -279,7 +362,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     var v = $('verdict');
     if (S.phase === 'ready'){
       var txt;
-      if (N === 0) txt = 'Ancora nessuna risposta. Inizia tu: segna i giorni in cui ci sei.';
+      if (N === 0) txt = 'Ancora nessuna risposta. Inizia tu: tocca il tuo nome e segna i giorni in cui ci sei.';
       else if (max === 0) txt = 'Ancora nessun giorno scelto.';
       else if (tops.length === 1) txt = 'Per ora vince ' + longDate(tops[0]) + ': ci sono ' + persone(max) + ' su ' + N + '.';
       else if (tops.length <= 4) txt = 'Pari merito tra ' + joinDays(tops) + ': in ciascuno ci sono ' + persone(max) + ' su ' + N + '.';
@@ -289,25 +372,25 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
 
     var note = $('note'), nt = S.noteMsg, nerr = S.noteErr;
     if (!nt && S.phase === 'loading') nt = 'Carico le risposte…';
-    if (!nt && !S.myName && S.mine.size > 0){
-      nt = 'Scrivi il tuo nome qui sopra: senza nome la risposta non si salva.';
-      nerr = true;
-    }
+    if (!nt && !S.myName && S.mine.size > 0){ nt = 'Tocca il tuo nome qui sopra: senza nome la risposta non si salva.'; nerr = true; }
     note.textContent = nt;
     note.className = 'note' + (nerr ? ' err' : '');
     note.hidden = !nt;
 
-    $('whoBox').hidden = !!S.myName;
+    $('pick').hidden = !!S.myName;
     var me = $('me');
+    me.textContent = '';
     if (S.myName){
-      me.textContent = 'Stai rispondendo come ' + S.myName + '.';
+      me.appendChild(avatar(S.myName));
+      var t = document.createElement('span');
+      t.textContent = 'Stai rispondendo come ' + S.myName + '.';
+      me.appendChild(t);
       var ch = document.createElement('button');
-      ch.type = 'button'; ch.textContent = 'cambia nome';
+      ch.type = 'button'; ch.textContent = 'non sei tu?';
       ch.addEventListener('click', function(){
-        $('nameInput').value = S.myName;
-        S.myName = '';
+        S.myName = ''; store('qcv-nome', '');
+        $('libero').hidden = true;
         render();
-        $('nameInput').focus();
       });
       me.appendChild(ch);
       me.hidden = false;
@@ -323,6 +406,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
       b.setAttribute('aria-label', longDate(s) + ': ' + (c === 1 ? '1 persona disponibile' : c + ' persone disponibili'));
     });
 
+    $('mai').hidden = !S.myName || S.mine.size > 0 || haRiga();
     var st = $('status'), stTxt = '', stErr = false;
     if (S.save === 'saving') stTxt = 'Salvataggio…';
     else if (S.save === 'saved') stTxt = 'Salvato';
@@ -330,6 +414,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     st.textContent = stTxt;
     st.className = 'status' + (stErr ? ' err' : '');
 
+    // classifica
     var rank = $('rank');
     rank.textContent = '';
     var days = DAYS.filter(function(d){ return by[d].length > 0; });
@@ -353,21 +438,48 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     });
     $('rankEmpty').hidden = days.length > 0 || S.phase !== 'ready';
 
+    // chi ha risposto
     var list = $('people');
     list.textContent = '';
-    $('peopleTitle').textContent = rows.length ? 'Chi ha risposto (' + rows.length + ')' : 'Chi ha risposto';
+    $('peopleTitle').textContent = 'Chi ha risposto';
+    if (rows.length){
+      var c1 = document.createElement('span'); c1.className = 'cnt'; c1.textContent = ' ' + rows.length;
+      $('peopleTitle').appendChild(c1);
+    }
     rows.forEach(function(r){
       var n = r.giorni.length;
       var li = document.createElement('li');
+      li.appendChild(avatar(r.nome));
       var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.nome;
       li.appendChild(nm);
-      if (r.io){ var t = document.createElement('span'); t.className = 'tu'; t.textContent = 'TU'; li.appendChild(t); }
+      if (r.io){ var tu = document.createElement('span'); tu.className = 'tu'; tu.textContent = 'TU'; li.appendChild(tu); }
       var ct = document.createElement('span'); ct.className = 'ct';
-      ct.textContent = n === 0 ? 'nessun giorno' : (n === 1 ? '1 giorno' : n + ' giorni');
+      ct.textContent = n === 0 ? 'non può mai' : (n === 1 ? '1 giorno' : n + ' giorni');
       li.appendChild(ct);
       list.appendChild(li);
     });
     $('peopleEmpty').hidden = rows.length > 0 || S.phase !== 'ready';
+
+    // chi manca
+    var hanno = {};
+    rows.forEach(function(r){ hanno[r.nome] = true; });
+    var mancano = GRUPPO.filter(function(g){ return !hanno[g.nome]; });
+    var miss = $('missing');
+    miss.textContent = '';
+    $('missingTitle').textContent = 'Chi manca a votare';
+    if (S.phase === 'ready'){
+      var c2 = document.createElement('span'); c2.className = 'cnt';
+      c2.textContent = ' ' + mancano.length + ' su ' + GRUPPO.length;
+      $('missingTitle').appendChild(c2);
+    }
+    mancano.forEach(function(g){
+      var li = document.createElement('li');
+      li.appendChild(avatar(g.nome));
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = g.nome;
+      li.appendChild(nm);
+      miss.appendChild(li);
+    });
+    $('missingEmpty').hidden = mancano.length > 0 || S.phase !== 'ready';
 
     $('removeBox').hidden = !S.myId;
     $('remove').textContent = S.confirmRemove ? 'Tocca di nuovo per confermare' : 'Rimuovi la mia risposta';
@@ -379,23 +491,23 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     if (extra) for (var k in extra) h[k] = extra[k];
     return h;
   }
-  async function load(){
-    var r = await fetch(API + '?sondaggio=eq.' + encodeURIComponent(SONDAGGIO) + '&select=id,nome,giorni,created_at&order=created_at.asc', { headers: headers() });
-    if (!r.ok) throw new Error('http ' + r.status);
-    return await r.json();
-  }
   async function refresh(){
     try {
-      var rows = await load();
+      var r = await fetch(API + '?sondaggio=eq.' + encodeURIComponent(SONDAGGIO) + '&select=id,nome,giorni,created_at&order=created_at.asc', { headers: headers() });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var rows = await r.json();
       S.rows = rows;
       S.phase = 'ready';
-      S.noteMsg = ''; S.noteErr = false;
-      var me = S.myId ? rows.filter(function(x){ return x.id === S.myId; })[0] : null;
-      if (me){
-        if (!S.dirty && !S.saving) S.mine = new Set((me.giorni||[]).filter(function(d){ return DAYS.indexOf(d) !== -1; }));
-        if (me.nome && !S.dirty) { S.myName = me.nome; store('qcv-nome', me.nome); }
+      if (!S.noteErr || S.noteMsg.indexOf('caricare') !== -1){ S.noteMsg = ''; S.noteErr = false; }
+      var mia = S.myId ? rows.filter(function(x){ return x.id === S.myId; })[0] : null;
+      if (mia){
+        if (!S.dirty && !S.saving){
+          S.mine = new Set((mia.giorni||[]).filter(function(d){ return DAYS.indexOf(d) !== -1; }));
+          S.forzaRiga = true;
+          if (mia.nome){ S.myName = mia.nome; store('qcv-nome', mia.nome); }
+        }
       } else if (S.myId){
-        S.myId = null; store('qcv-id', '');
+        S.myId = null; S.forzaRiga = false; store('qcv-id', '');
       }
       render();
     } catch(e){
@@ -416,20 +528,19 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
   }
 
   async function flush(){
-    if (!S.myName){ S.save = 'idle'; S.dirty = false; render(); return; }
+    if (!S.myName || !haRiga()){ S.save = 'idle'; S.dirty = false; render(); return; }
     if (S.saving){ S.queued = true; return; }
     S.saving = true; S.queued = false;
     var giorni = Array.from(S.mine).sort();
     try {
       if (!S.myId){
-        var r = await fetch(API + '?select=id,nome,giorni', {
+        var r = await fetch(API + '?select=id', {
           method: 'POST',
           headers: headers({ 'Prefer': 'return=representation' }),
           body: JSON.stringify({ sondaggio: SONDAGGIO, nome: S.myName, giorni: giorni, token: S.token })
         });
         if (!r.ok) throw new Error(await r.text());
-        var created = (await r.json())[0];
-        S.myId = created.id;
+        S.myId = (await r.json())[0].id;
         store('qcv-id', S.myId);
       } else {
         var r2 = await fetch(API + '?id=eq.' + S.myId + '&select=id', {
@@ -438,8 +549,7 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
           body: JSON.stringify({ nome: S.myName, giorni: giorni })
         });
         if (!r2.ok) throw new Error(await r2.text());
-        var back = await r2.json();
-        if (!back.length) throw new Error('riga non modificabile');
+        if (!(await r2.json()).length) throw new Error('riga non modificabile');
       }
       S.dirty = false; S.save = 'saved'; S.saveMsg = '';
     } catch(e){
@@ -452,34 +562,51 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     refresh();
   }
 
-  function toggle(d){
-    if (!S.myName){
-      S.mine.has(d) ? S.mine.delete(d) : S.mine.add(d);
-      render();
-      $('nameInput').focus();
-      return;
+  function scegli(nome){
+    var gia = S.rows.filter(function(r){ return r.nome === nome && r.id !== S.myId; })[0];
+    if (gia && !S.myId){
+      S.noteMsg = 'Risulta già una risposta a nome ' + nome + ', fatta da un altro telefono. Se sei tu, correggila da quel telefono: da qui ne nascerebbe una seconda.';
+      S.noteErr = true;
+    } else {
+      S.noteMsg = ''; S.noteErr = false;
     }
-    S.mine.has(d) ? S.mine.delete(d) : S.mine.add(d);
-    changed();
+    S.myName = nome;
+    store('qcv-nome', nome);
+    $('libero').hidden = true;
+    if (haRiga()) changed(); else render();
   }
 
-  function setName(){
+  $('altro').addEventListener('click', function(){
+    $('libero').hidden = false;
+    $('nameInput').focus();
+  });
+  function nomeLibero(){
     var v = $('nameInput').value.trim().slice(0, 60);
-    if (!v) { $('nameInput').focus(); return; }
-    S.myName = v;
-    store('qcv-nome', v);
+    if (!v){ $('nameInput').focus(); return; }
+    scegli(v);
+  }
+  $('nameSave').addEventListener('click', nomeLibero);
+  $('nameInput').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); nomeLibero(); } });
+
+  function toggle(d){
+    if (S.mine.has(d)) S.mine.delete(d); else S.mine.add(d);
+    if (!S.myName){ render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     changed();
   }
-  $('nameSave').addEventListener('click', setName);
-  $('nameInput').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); setName(); } });
-
   $('all').addEventListener('click', function(){
     S.mine = new Set(DAYS);
-    S.myName ? changed() : (render(), $('nameInput').focus());
+    if (!S.myName){ render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    changed();
   });
   $('none').addEventListener('click', function(){
     S.mine = new Set();
     S.myName ? changed() : render();
+  });
+  $('mai').addEventListener('click', function(){
+    if (!S.myName) return;
+    S.mine = new Set();
+    S.forzaRiga = true;
+    changed();
   });
 
   $('remove').addEventListener('click', async function(){
@@ -488,8 +615,9 @@ footer{ margin-top:44px; font-size:.82rem; color:var(--muted); }
     S.confirmRemove = false;
     try {
       await fetch(API + '?id=eq.' + S.myId, { method: 'DELETE', headers: headers({ 'x-token': S.token }) });
-      S.myId = null; S.mine = new Set(); S.save = 'idle'; S.dirty = false;
-      S.myName = ''; $('nameInput').value = '';
+      S.myId = null; S.mine = new Set(); S.save = 'idle'; S.dirty = false; S.forzaRiga = false;
+      S.myName = ''; S.noteMsg = ''; S.noteErr = false;
+      $('nameInput').value = ''; $('libero').hidden = true;
       store('qcv-id', ''); store('qcv-nome', '');
     } catch(e){
       S.save = 'error'; S.saveMsg = 'Rimozione non riuscita.';
